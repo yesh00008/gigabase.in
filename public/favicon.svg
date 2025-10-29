@@ -1,0 +1,39 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <rect width="64" height="64" rx="12" fill="#000000"/>
+  
+  <!-- Outer Glow Ring -->
+  <circle cx="32" cy="32" r="28" stroke="url(#grad1)" stroke-width="1" opacity="0.3"/>
+  
+  <!-- Letter G -->
+  <path d="M32 12C20.4 12 11 21.4 11 33C11 44.6 20.4 54 32 54C37.5 54 42.5 51.8 46 48.2V38H32V44H40V46.5C37.5 49 35 50 32 50C22.6 50 15 42.4 15 33C15 23.6 22.6 16 32 16C36.8 16 41 18 44 21.2L48.2 17C44.2 13 38.5 12 32 12Z" fill="url(#grad2)"/>
+  
+  <!-- Stars around G -->
+  <circle cx="18" cy="18" r="1.5" fill="white" opacity="0.8">
+    <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="46" cy="18" r="1.5" fill="white" opacity="0.6">
+    <animate attributeName="opacity" values="0.5;1;0.5" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="50" cy="32" r="1.2" fill="white" opacity="0.7">
+    <animate attributeName="opacity" values="0.4;1;0.4" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="46" cy="46" r="1.5" fill="white" opacity="0.5">
+    <animate attributeName="opacity" values="0.6;1;0.6" dur="2.2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="18" cy="46" r="1.2" fill="white" opacity="0.8">
+    <animate attributeName="opacity" values="0.3;1;0.3" dur="2.8s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:rgb(59, 130, 246);stop-opacity:0.5" />
+      <stop offset="100%" style="stop-color:rgb(147, 197, 253);stop-opacity:0.5" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:rgb(255, 255, 255);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgb(191, 219, 254);stop-opacity:1" />
+    </linearGradient>
+  </defs>
+</svg>

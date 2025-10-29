@@ -106,17 +106,6 @@ All colors MUST be HSL.
     position: absolute;
     background: hsl(var(--star-shimmer));
     border-radius: 50%;
-    animation: twinkle 3s infinite ease-in-out;
-  }
-  
-  @keyframes twinkle {
-    0%, 100% { opacity: 0.3; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.2); }
-  }
-  
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
   }
   
   /* Responsive text utilities */
@@ -125,4 +114,216 @@ All colors MUST be HSL.
       text-shadow: 0 0 15px hsl(var(--cosmic-glow) / 0.5);
     }
   }
+}
+
+/* Article content styling */
+.article-wrapper {
+  @apply space-y-6;
+}
+
+.article-meta {
+  @apply text-center mb-6;
+}
+
+.quick-summary {
+  @apply mb-8 p-6 bg-blue-500/10 border border-blue-500/30 rounded-xl;
+}
+
+.quick-summary h3 {
+  @apply text-lg font-semibold text-blue-300 mb-3;
+}
+
+.quick-summary p {
+  @apply text-sm leading-relaxed;
+  color: rgba(200, 200, 200, 0.9);
+}
+
+/* Keyword Highlighting */
+.keyword-highlight {
+  @apply bg-yellow-500/30 text-yellow-200 px-1 rounded;
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(234, 179, 8, 0.3);
+}
+
+/* Article Inline Images */
+.article-inline-figure {
+  @apply my-8 text-center;
+  clear: both;
+  background: white;
+  padding: 1rem;
+  border-radius: 0.75rem;
+}
+
+.article-inline-image {
+  @apply mx-auto rounded-xl shadow-2xl border border-border/30;
+  max-width: 100%;
+  height: auto;
+  max-height: 600px;
+  object-fit: contain;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background: white;
+  padding: 0.5rem;
+}
+
+.article-inline-image:hover {
+  transform: scale(1.02);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+}
+
+.main-article-content {
+  @apply space-y-6;
+}
+
+.main-article-content p {
+  @apply mb-4 leading-relaxed text-base;
+  text-align: justify;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.main-article-content h2 {
+  @apply text-2xl font-bold text-blue-400 mt-8 mb-4 border-b border-blue-500/30 pb-2;
+}
+
+.main-article-content h3 {
+  @apply text-xl font-semibold text-blue-300 mt-6 mb-3;
+}
+
+.main-article-content h4 {
+  @apply text-lg font-medium text-blue-200 mt-4 mb-2;
+}
+
+.main-article-content ul,
+.main-article-content ol {
+  @apply ml-6 mb-4 space-y-2;
+}
+
+.main-article-content li {
+  @apply leading-relaxed;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.main-article-content ul li {
+  @apply list-disc;
+}
+
+.main-article-content ol li {
+  @apply list-decimal;
+}
+
+.main-article-content img,
+.main-article-content img.article-image {
+  @apply mx-auto rounded-xl shadow-2xl my-6;
+  max-height: 600px;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.main-article-content table {
+  @apply w-full border-collapse my-6 rounded-lg overflow-hidden;
+}
+
+.main-article-content th,
+.main-article-content td {
+  @apply border border-border/50 px-4 py-3;
+}
+
+.main-article-content th {
+  @apply bg-blue-500/20 font-semibold text-blue-300;
+}
+
+.main-article-content td {
+  @apply bg-muted/10;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.main-article-content figure {
+  @apply text-center my-6;
+}
+
+.main-article-content figcaption {
+  @apply text-sm text-muted-foreground mt-2 italic;
+}
+
+.main-article-content blockquote {
+  @apply border-l-4 border-accent pl-4 italic my-6 text-muted-foreground bg-accent/5 py-3 rounded-r-lg;
+}
+
+.main-article-content code {
+  @apply bg-muted/30 px-2 py-1 rounded text-sm font-mono text-accent;
+}
+
+.main-article-content pre {
+  @apply bg-muted/30 p-4 rounded-lg overflow-x-auto my-6;
+}
+
+.article-footer {
+  @apply mt-12 pt-6 border-t border-border/30 text-center;
+}
+
+.prose img {
+  @apply mx-auto rounded-lg shadow-2xl my-6;
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.prose figure {
+  @apply text-center my-6;
+}
+
+.prose figcaption {
+  @apply text-sm text-muted-foreground mt-2 italic;
+}
+
+.prose table {
+  @apply w-full border-collapse my-6;
+}
+
+.prose th,
+.prose td {
+  @apply border border-border/50 px-4 py-2;
+}
+
+.prose th {
+  @apply bg-muted/20 font-semibold;
+}
+
+.prose a {
+  @apply text-accent hover:underline;
+}
+
+.prose p {
+  @apply mb-4 leading-relaxed;
+  text-align: justify;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  @apply text-blue-400 font-semibold mt-6 mb-4;
+}
+
+.prose ul,
+.prose ol {
+  @apply ml-6 mb-4;
+}
+
+.prose li {
+  @apply mb-2;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-accent pl-4 italic my-6 text-muted-foreground;
+}
+
+.prose code {
+  @apply bg-muted/30 px-2 py-1 rounded text-sm;
+}
+
+.prose pre {
+  @apply bg-muted/30 p-4 rounded-lg overflow-x-auto my-6;
 }

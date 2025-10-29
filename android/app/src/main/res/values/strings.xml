@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Gigabase</string>
+    <string name="title_activity_main">Gigabase</string>
+    <string name="package_name">com.gigabase.app</string>
+    <string name="custom_url_scheme">com.gigabase.app</string>
+</resources>

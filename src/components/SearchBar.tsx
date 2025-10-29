@@ -1,6 +1,7 @@
 import { Search, ArrowUp } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface SearchBarProps {
   onSearch?: (query: string) => void;
@@ -59,10 +60,10 @@ const SearchBar = ({ onSearch, placeholder = "Search for anything..." }: SearchB
     }
   };
 
-  const handleSuggestionClick = (pageid: number) => {
+  const handleSuggestionClick = (title: string) => {
     setShowSuggestions(false);
-    setQuery("");
-    navigate(`/article/${pageid}`);
+    setQuery(title);
+    navigate(`/search?q=${encodeURIComponent(title)}`);
   };
 
   return (
@@ -87,30 +88,41 @@ const SearchBar = ({ onSearch, placeholder = "Search for anything..." }: SearchB
         </button>
       </div>
 
-      {showSuggestions && suggestions.length > 0 && (
-        <div className="absolute top-full mt-2 w-full glass-card border border-border/50 rounded-xl shadow-lg shadow-accent/10 z-20 max-h-80 sm:max-h-96 overflow-y-auto backdrop-blur-md">
-          {suggestions.map((suggestion) => (
-            <button
-              key={suggestion.pageid}
-              type="button"
-              onMouseDown={() => handleSuggestionClick(suggestion.pageid)}
-              className="w-full text-left px-4 sm:px-6 py-3 sm:py-4 hover:bg-accent/10 transition-colors border-b border-border/30 last:border-b-0"
-            >
-              <div className="flex items-start gap-2 sm:gap-3">
-                <Search size={14} className="sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0 mt-1" />
-                <div className="flex-1 min-w-0">
-                  <div className="text-foreground font-medium mb-1 text-sm sm:text-base truncate sm:whitespace-normal">{suggestion.title}</div>
-                  {suggestion.snippet && (
-                    <div className="text-xs text-muted-foreground line-clamp-2">
-                      {suggestion.snippet}
-                    </div>
-                  )}
+      <AnimatePresence>
+        {showSuggestions && suggestions.length > 0 && (
+          <motion.div 
+            className="absolute top-full mt-2 w-full glass-card border border-border/50 rounded-xl shadow-lg shadow-accent/10 z-20 max-h-80 sm:max-h-96 overflow-y-auto backdrop-blur-md"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            {suggestions.map((suggestion, index) => (
+              <motion.button
+                key={suggestion.pageid}
+                type="button"
+                onMouseDown={() => handleSuggestionClick(suggestion.title)}
+                className="w-full text-left px-4 sm:px-6 py-3 sm:py-4 hover:bg-accent/10 transition-colors border-b border-border/30 last:border-b-0"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <Search size={14} className="sm:w-4 sm:h-4 text-muted-foreground flex-shrink-0 mt-1" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-foreground font-medium mb-1 text-sm sm:text-base truncate sm:whitespace-normal">{suggestion.title}</div>
+                    {suggestion.snippet && (
+                      <div className="text-xs text-muted-foreground line-clamp-2">
+                        {suggestion.snippet}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
+              </motion.button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </form>
   );
 };

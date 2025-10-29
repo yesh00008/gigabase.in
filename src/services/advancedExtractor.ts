@@ -90,10 +90,7 @@ export class AdvancedContentExtractor {
     // Determine source from URL
     let source = 'Unknown';
     if (url.includes('alphacodingskills.com')) source = 'AlphaCodingSkills';
-    else if (url.includes('geeksforgeeks.org')) source = 'GeeksForGeeks';
     else if (url.includes('leetcode.com')) source = 'LeetCode';
-    else if (url.includes('w3schools.com')) source = 'W3Schools';
-    else if (url.includes('tutorialspoint.com')) source = 'TutorialsPoint';
     else if (url.includes('javatpoint.com')) source = 'JavaTPoint';
 
     return {
@@ -501,66 +498,6 @@ export async function advancedMultiSourceSearch(query: string): Promise<MatchedC
     console.error('AlphaCodingSkills fetch error:', error);
   }
 
-  // Try to get content from GeeksForGeeks with better error handling
-  try {
-    const gfgUrl = buildGeeksForGeeksURL(query)[0];
-    if (gfgUrl) {
-      const html = await fetchWithProxy(gfgUrl);
-      if (html && html.length > 100) { // Only process if we got actual content
-        const content = AdvancedContentExtractor.extractStructuredContent(html, gfgUrl);
-        if (content && content.content.length > 100) {
-          const tfidfScore = SearchAlgorithm.calculateTFIDF(query, content.content, [content.content]);
-          const bm25Score = SearchAlgorithm.calculateBM25(query, content.content, 500);
-          const semanticScore = SearchAlgorithm.calculateSemanticSimilarity(query, content.content);
-          const ngramScore = SearchAlgorithm.nGramSimilarity(query, content.title);
-
-          content.relevanceScore = (
-            tfidfScore * 0.3 +
-            bm25Score * 0.3 +
-            semanticScore * 0.2 +
-            ngramScore * 0.2
-          ) * 100;
-
-          results.push(content);
-        }
-      } else {
-        console.warn('GeeksForGeeks: No content received from proxies, skipping...');
-      }
-    }
-  } catch (error) {
-    console.warn('GeeksForGeeks fetch failed, continuing with other sources...', error);
-  }
-
-  // Try W3Schools
-  try {
-    const w3sUrls = buildW3SchoolsURL(query);
-    if (w3sUrls.length > 0) {
-      const html = await fetchWithProxy(w3sUrls[0]);
-      if (html && html.length > 100) { // Only process if we got actual content
-        const content = AdvancedContentExtractor.extractStructuredContent(html, w3sUrls[0]);
-        if (content && content.content.length > 100) {
-          const tfidfScore = SearchAlgorithm.calculateTFIDF(query, content.content, [content.content]);
-          const bm25Score = SearchAlgorithm.calculateBM25(query, content.content, 500);
-          const semanticScore = SearchAlgorithm.calculateSemanticSimilarity(query, content.content);
-          const ngramScore = SearchAlgorithm.nGramSimilarity(query, content.title);
-
-          content.relevanceScore = (
-            tfidfScore * 0.3 +
-            bm25Score * 0.3 +
-            semanticScore * 0.2 +
-            ngramScore * 0.2
-          ) * 100;
-
-          results.push(content);
-        }
-      } else {
-        console.warn('W3Schools: No content received from proxies, skipping...');
-      }
-    }
-  } catch (error) {
-    console.warn('W3Schools fetch failed, continuing with other sources...', error);
-  }
-
   // Sort by relevance score
   results.sort((a, b) => b.relevanceScore - a.relevanceScore);
 
@@ -591,37 +528,4 @@ function buildAlphaCodingURL(query: string): string[] {
   });
 
   return urls;
-}
-
-function buildGeeksForGeeksURL(query: string): string[] {
-  const normalized = query.toLowerCase().replace(/\s+/g, '-');
-  return [`https://www.geeksforgeeks.org/${normalized}/`];
-}
-
-function buildW3SchoolsURL(query: string): string[] {
-  const urls: string[] = [];
-  const languages = ['python', 'java', 'js', 'sql', 'php', 'css', 'html'];
-  
-  languages.forEach(lang => {
-    if (query.toLowerCase().includes(lang)) {
-      const topic = query.toLowerCase().replace(lang, '').trim().replace(/\s+/g, '_');
-      urls.push(`https://www.w3schools.com/${lang}/${lang}_${topic}.asp`);
-    }
-  });
-
-  return urls;
-}
-
-function buildJavaTPointURL(query: string): string[] {
-  const normalized = query.toLowerCase().replace(/\s+/g, '-');
-  return [`https://www.javatpoint.com/${normalized}`];
-}
-
-function buildTutorialsPointURL(query: string): string[] {
-  const words = query.toLowerCase().split(/\s+/);
-  if (words.length > 0) {
-    const topic = words.join('_');
-    return [`https://www.tutorialspoint.com/${words[0]}/${topic}.htm`];
-  }
-  return [];
 }

@@ -19,7 +19,7 @@ const App = () => {
         <Sonner />
         
         <BrowserRouter 
-          basename="/"
+          basename="/gigabase.in"
           future={{
             v7_startTransition: true,
             v7_relativeSplatPath: true

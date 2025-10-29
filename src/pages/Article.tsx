@@ -30,7 +30,7 @@ const Article = () => {
   const [loading, setLoading] = useState(true);
 
   const handleRelatedArticleClick = async (title: string) => {
-    // Search Wikipedia for the article title
+    // Search Gigabase Knowledge Database for the article title
     try {
       const response = await fetch(
         `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(

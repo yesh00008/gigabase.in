@@ -8,14 +8,14 @@ const Home = () => {
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
-    // Fetch Wikipedia statistics
+    // Fetch Gigabase Knowledge Database statistics
     fetch("https://en.wikipedia.org/w/api.php?action=query&meta=siteinfo&siprop=statistics&format=json&origin=*")
       .then(res => res.json())
       .then(data => {
         const count = data?.query?.statistics?.articles || 0;
         setArticleCount(count.toLocaleString());
       })
-      .catch(() => setArticleCount("885,279"));
+      .catch(() => setArticleCount("6,885,279"));
   }, []);
 
   const toggleTheme = () => {

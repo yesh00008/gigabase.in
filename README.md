@@ -1,73 +1,170 @@
-# Welcome to your Lovable project
+# 🌌 Gigabase - Knowledge Nexus
 
-## Project info
+> Your ultimate knowledge base powered by multiple verified APIs. Search and explore millions of articles with a beautiful, intuitive interface.
 
-**URL**: https://lovable.dev/projects/fdf9556c-c2cc-4241-b857-d2e20db40d5b
+![Gigabase](https://img.shields.io/badge/Status-Live-success?style=for-the-badge)
+![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
+![React](https://img.shields.io/badge/React-18.3-61DAFB?style=for-the-badge&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?style=for-the-badge&logo=typescript)
 
-## How can I edit this code?
+## ✨ Features
 
-There are several ways of editing your application.
+- 🔍 **Smart Search** - Search across millions of articles with intelligent autocomplete
+- 📚 **Multiple Sources** - Aggregates content from Wikipedia, ArXiv, and more
+- 🎨 **Beautiful UI** - Glassmorphism design with animated starfield background
+- 📱 **Fully Responsive** - Perfect experience on mobile, tablet, and desktop
+- ⚡ **Fast & Efficient** - Optimized performance with caching and lazy loading
+- 🌙 **Theme Toggle** - Switch between light and dark modes
+- 📄 **Quick Summary** - Get instant article summaries
+- 🔗 **Related Content** - Discover related articles and topics
+- 🖼️ **Rich Media** - High-quality images with optimized display
+- 🎯 **Clean Navigation** - Intuitive breadcrumbs and internal linking
 
-**Use Lovable**
+## 🚀 Live Demo
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/fdf9556c-c2cc-4241-b857-d2e20db40d5b) and start prompting.
+Visit the live application: [https://yesh00008.github.io/gigabase.in](https://yesh00008.github.io/gigabase.in)
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠️ Technologies
 
-**Use your preferred IDE**
+This project is built with modern web technologies:
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- **React 18.3** - UI library
+- **TypeScript 5.5** - Type safety
+- **Vite** - Build tool & dev server
+- **Tailwind CSS** - Utility-first styling
+- **shadcn/ui** - Beautiful component library
+- **Lucide React** - Icon system
+- **React Router** - Client-side routing
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 📦 Installation
 
-Follow these steps:
+### Prerequisites
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+- Node.js 18+ and npm installed - [Install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Setup
 
-# Step 3: Install the necessary dependencies.
-npm i
+```bash
+# Clone the repository
+git clone https://github.com/yesh00008/gigabase.in.git
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Navigate to project directory
+cd gigabase.in
+
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The application will be available at `http://localhost:5173`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🏗️ Build for Production
 
-**Use GitHub Codespaces**
+```bash
+# Create optimized production build
+npm run build
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Preview production build locally
+npm run preview
+```
 
-## What technologies are used for this project?
+## 📁 Project Structure
 
-This project is built with:
+```
+gigabase.in/
+├── public/              # Static assets
+│   ├── favicon.svg     # Custom Gigabase favicon
+│   └── robots.txt      # SEO configuration
+├── src/
+│   ├── components/     # React components
+│   │   ├── ui/        # shadcn/ui components
+│   │   ├── SearchBar.tsx
+│   │   └── StarField.tsx
+│   ├── pages/         # Page components
+│   │   ├── Home.tsx
+│   │   ├── Article.tsx
+│   │   ├── SearchResults.tsx
+│   │   └── NotFound.tsx
+│   ├── services/      # API integrations
+│   │   ├── arxiv.ts
+│   │   ├── github.ts
+│   │   └── stackexchange.ts
+│   ├── hooks/         # Custom React hooks
+│   ├── lib/           # Utility functions
+│   └── index.css      # Global styles
+└── package.json
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🎨 Design Features
 
-## How can I deploy this project?
+### Glassmorphism UI
+- Semi-transparent backgrounds with blur effects
+- Subtle borders and shadows
+- Layered depth perception
 
-Simply open [Lovable](https://lovable.dev/projects/fdf9556c-c2cc-4241-b857-d2e20db40d5b) and click on Share -> Publish.
+### Animated Starfield
+- 100 tiny white particles
+- 5 fast-moving shooting stars
+- Smooth canvas-based animation
+- Twinkling effects
 
-## Can I connect a custom domain to my Lovable project?
+### Responsive Design
+- Mobile-first approach
+- Breakpoints: sm (640px), md (768px), lg (1024px)
+- Touch-friendly interfaces
+- Adaptive layouts
 
-Yes, you can!
+## 🔧 Configuration
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Environment Variables
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Create a `.env` file in the root directory:
+
+```env
+VITE_APP_NAME=Gigabase
+VITE_API_CACHE_DURATION=300000
+```
+
+## 📚 API Integrations
+
+- **Wikipedia API** - Article content and images
+- **ArXiv API** - Related research papers
+- **GitHub API** - Code repositories (optional)
+- **Stack Exchange API** - Q&A content (optional)
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👨‍💻 Author
+
+**Yaswanth Thotakura**
+- GitHub: [@yesh00008](https://github.com/yesh00008)
+- Email: thotakurayaswanth104@gmail.com
+
+## 🙏 Acknowledgments
+
+- Wikipedia for providing free knowledge to the world
+- ArXiv for open access to research papers
+- shadcn/ui for the beautiful component library
+- The open-source community
+
+## 📞 Support
+
+For support, email thotakurayaswanth104@gmail.com or open an issue on GitHub.
+
+---
+
+Made with ❤️ by Yaswanth Thotakura

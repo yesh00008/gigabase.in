@@ -1,13 +1,41 @@
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import StarField from "@/components/StarField";
+import { App as CapacitorApp } from '@capacitor/app';
 
 const NotFound = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
   }, [location.pathname]);
+
+  // Handle Android hardware back button - go back to previous page
+  useEffect(() => {
+    const setupBackButtonHandler = async () => {
+      const backButtonHandler = await CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+        if (canGoBack) {
+          navigate(-1);
+        } else {
+          navigate('/');
+        }
+      });
+
+      return backButtonHandler;
+    };
+
+    let listenerCleanup: any = null;
+    setupBackButtonHandler().then(listener => {
+      listenerCleanup = listener;
+    });
+
+    return () => {
+      if (listenerCleanup) {
+        listenerCleanup.remove();
+      }
+    };
+  }, [navigate]);
 
   return (
     <div className="flex min-h-screen items-center justify-center relative overflow-hidden">

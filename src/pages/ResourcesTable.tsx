@@ -1,13 +1,15 @@
-import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Search, ExternalLink, SortAsc, SortDesc } from "lucide-react";
 import StarField from "@/components/StarField";
 import { getAllProgrammingResources, ProgrammingResource } from "@/services/programmingKnowledge";
+import { App as CapacitorApp } from '@capacitor/app';
 
 type SortField = 'title' | 'category';
 type SortOrder = 'asc' | 'desc';
 
 const ResourcesTable = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [sortField, setSortField] = useState<SortField>('category');
@@ -54,6 +56,32 @@ const ResourcesTable = () => {
 
     return filtered;
   }, [allResources, searchQuery, selectedCategory, sortField, sortOrder]);
+
+  // Handle Android hardware back button - go back to previous page
+  useEffect(() => {
+    const setupBackButtonHandler = async () => {
+      const backButtonHandler = await CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+        if (canGoBack) {
+          navigate(-1);
+        } else {
+          navigate('/');
+        }
+      });
+
+      return backButtonHandler;
+    };
+
+    let listenerCleanup: any = null;
+    setupBackButtonHandler().then(listener => {
+      listenerCleanup = listener;
+    });
+
+    return () => {
+      if (listenerCleanup) {
+        listenerCleanup.remove();
+      }
+    };
+  }, [navigate]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {

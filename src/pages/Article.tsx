@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Clock, FileText } from "lucide-react";
 import StarField from "@/components/StarField";
 import { searchArXiv, ArXivPaper } from "@/services/arxiv";
+import { App as CapacitorApp } from '@capacitor/app';
 
 interface ArticleImage {
   url: string;
@@ -125,6 +126,30 @@ const Article = () => {
         setLoading(false);
       });
   }, [id]);
+
+  // Handle Android hardware back button - go back to previous page
+  useEffect(() => {
+    const setupBackButtonHandler = async () => {
+      const backButtonHandler = await CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+        if (canGoBack) {
+          navigate(-1);
+        }
+      });
+
+      return backButtonHandler;
+    };
+
+    let listenerCleanup: any = null;
+    setupBackButtonHandler().then(listener => {
+      listenerCleanup = listener;
+    });
+
+    return () => {
+      if (listenerCleanup) {
+        listenerCleanup.remove();
+      }
+    };
+  }, [navigate]);
 
   return (
     <div className="min-h-screen relative overflow-x-hidden">

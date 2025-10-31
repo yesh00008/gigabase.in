@@ -3,6 +3,7 @@ import StarField from "@/components/StarField";
 import SearchBar from "@/components/SearchBar";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { App as CapacitorApp } from '@capacitor/app';
 
 const Home = () => {
   const [articleCount, setArticleCount] = useState(0);
@@ -17,6 +18,29 @@ const Home = () => {
         setArticleCount(count);
       })
       .catch(() => setArticleCount(6885279));
+  }, []);
+
+  // Handle Android hardware back button - exit app from home page
+  useEffect(() => {
+    const setupBackButtonHandler = async () => {
+      const backButtonHandler = await CapacitorApp.addListener('backButton', () => {
+        // On home page, allow default behavior (exit app)
+        CapacitorApp.exitApp();
+      });
+
+      return backButtonHandler;
+    };
+
+    let listenerCleanup: any = null;
+    setupBackButtonHandler().then(listener => {
+      listenerCleanup = listener;
+    });
+
+    return () => {
+      if (listenerCleanup) {
+        listenerCleanup.remove();
+      }
+    };
   }, []);
 
   const toggleTheme = () => {

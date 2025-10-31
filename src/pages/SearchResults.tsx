@@ -1,6 +1,6 @@
-  import { useEffect, useState } from "react";
+  import { useEffect, useState, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Code2, BookOpen, Zap, Clock, Award, FileText, GraduationCap, Globe, Video, Library, Lightbulb, TrendingUp, Sparkles, ArrowUp } from "lucide-react";
+import { ArrowLeft, Code2, BookOpen, Zap, Clock, Award, FileText, GraduationCap, Globe, Video, Library, Lightbulb, TrendingUp, Sparkles, ArrowUp, Play, Pause, Square } from "lucide-react";
 import StarField from "@/components/StarField";
 import SearchBar from "@/components/SearchBar";
 import { advancedMultiSourceSearch } from "@/services/advancedExtractor";
@@ -9,6 +9,7 @@ import { searchResearchPapers } from "@/services/researchPapers";
 import { UltraAdvancedSearchEngine } from "@/services/ultraAdvancedSearch";
 import { searchAllAdditionalSources } from "@/services/additionalSources";
 import { searchAllAdvancedResources } from "@/services/advancedResources";
+import { App as CapacitorApp } from '@capacitor/app';
 import { HyperAdvancedAlgorithms } from "@/services/hyperAdvancedAlgorithms";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -34,6 +35,282 @@ const SearchResults = () => {
   const [selectedArticle, setSelectedArticle] = useState<{ id: number; title: string } | null>(null);
   const [articleContent, setArticleContent] = useState<string>("");
   const [articleLoading, setArticleLoading] = useState(false);
+  
+  // Text-to-Speech state
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const speechSynthRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const progressIntervalRef = useRef<number | null>(null);
+
+  // Text-to-Speech functions
+  const getArticleText = (htmlContent: string): string => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlContent, 'text/html');
+    return doc.body.textContent || '';
+  };
+
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handlePlaySpeech = () => {
+    if (!articleContent) return;
+
+    // If paused, resume
+    if (isPaused) {
+      window.speechSynthesis.resume();
+      setIsPaused(false);
+      setIsSpeaking(true);
+      return;
+    }
+
+    // Stop any existing speech
+    window.speechSynthesis.cancel();
+
+    const text = getArticleText(articleContent);
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    // Optimized settings for most natural human-like voice
+    utterance.rate = 1.0; // Normal human speaking speed
+    utterance.pitch = 1.0; // Natural pitch
+    utterance.volume = 0.3; // Lower volume (60%)
+    
+    // Select the best available voice
+    const loadVoices = () => {
+      const voices = window.speechSynthesis.getVoices();
+      console.log('Available voices:', voices.map(v => ({ name: v.name, lang: v.lang, local: v.localService })));
+      
+      // Try to find the highest quality voice in this order:
+      // 1. Google voices (most natural)
+      // 2. Microsoft Neural/Natural voices
+      // 3. Enhanced/Premium voices
+      // 4. Non-local (cloud) voices
+      const preferredVoice = 
+        // Google voices are usually the most natural
+        voices.find(v => v.name.includes('Google') && v.lang.startsWith('en')) ||
+        // Microsoft Neural voices
+        voices.find(v => (v.name.includes('Neural') || v.name.includes('Natural')) && v.lang.startsWith('en')) ||
+        // Microsoft enhanced voices
+        voices.find(v => v.name.includes('Microsoft') && v.name.includes('Online') && v.lang.startsWith('en')) ||
+        // Any cloud/remote voice (usually better quality)
+        voices.find(v => !v.localService && v.lang.startsWith('en')) ||
+        // Specific good quality voices
+        voices.find(v => (v.name.includes('Samantha') || v.name.includes('Alex')) && v.lang.startsWith('en')) ||
+        // Any English voice
+        voices.find(v => v.lang.startsWith('en-US')) ||
+        voices.find(v => v.lang.startsWith('en'));
+      
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+        utterance.lang = preferredVoice.lang;
+        console.log('✓ Selected voice:', preferredVoice.name, '| Language:', preferredVoice.lang, '| Local:', preferredVoice.localService);
+      } else {
+        console.warn('No preferred voice found, using default');
+      }
+    };
+
+    // Load voices (needed for some browsers)
+    if (window.speechSynthesis.getVoices().length > 0) {
+      loadVoices();
+    } else {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    utterance.onstart = () => {
+      setIsSpeaking(true);
+      setIsPaused(false);
+      setCurrentTime(0);
+      
+      // Calculate estimated duration (words per minute)
+      const text = getArticleText(articleContent);
+      const wordCount = text.split(/\s+/).length;
+      const wordsPerMinute = 150; // Average speaking rate
+      const estimatedDuration = (wordCount / wordsPerMinute) * 60;
+      setDuration(estimatedDuration);
+      
+      // Start progress tracking
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+      
+      progressIntervalRef.current = window.setInterval(() => {
+        setCurrentTime(prev => {
+          if (prev >= estimatedDuration) {
+            if (progressIntervalRef.current) {
+              clearInterval(progressIntervalRef.current);
+            }
+            return estimatedDuration;
+          }
+          return prev + 0.1;
+        });
+      }, 100);
+    };
+
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      setIsPaused(false);
+      setCurrentTime(0);
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+    };
+
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+      setIsPaused(false);
+      setCurrentTime(0);
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+    };
+
+    speechSynthRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const handlePauseSpeech = () => {
+    if (isSpeaking && !isPaused) {
+      window.speechSynthesis.pause();
+      setIsPaused(true);
+      setIsSpeaking(false);
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+    }
+  };
+
+  const handleStopSpeech = () => {
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+    setIsPaused(false);
+    setCurrentTime(0);
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+  };
+
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!duration || !isSpeaking) return;
+    
+    const progressBar = e.currentTarget;
+    const rect = progressBar.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const percentage = clickX / rect.width;
+    const newTime = duration * percentage;
+    
+    // Stop current speech and restart from new position
+    window.speechSynthesis.cancel();
+    setCurrentTime(newTime);
+    
+    if (!articleContent) return;
+    
+    const text = getArticleText(articleContent);
+    const words = text.split(/\s+/);
+    const wordsPerMinute = 150;
+    const wordPosition = Math.floor((words.length * newTime) / duration);
+    const newText = words.slice(wordPosition).join(' ');
+    
+    const utterance = new SpeechSynthesisUtterance(newText);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    utterance.volume = 0.3;
+    
+    // Reuse voice selection logic
+    const voices = window.speechSynthesis.getVoices();
+    const preferredVoice = 
+      voices.find(v => v.name.includes('Google') && v.lang.startsWith('en')) ||
+      voices.find(v => (v.name.includes('Neural') || v.name.includes('Natural')) && v.lang.startsWith('en')) ||
+      voices.find(v => v.name.includes('Microsoft') && v.name.includes('Online') && v.lang.startsWith('en')) ||
+      voices.find(v => !v.localService && v.lang.startsWith('en')) ||
+      voices.find(v => (v.name.includes('Samantha') || v.name.includes('Alex')) && v.lang.startsWith('en')) ||
+      voices.find(v => v.lang.startsWith('en-US')) ||
+      voices.find(v => v.lang.startsWith('en'));
+    
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+      utterance.lang = preferredVoice.lang;
+    }
+    
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      setIsPaused(false);
+      setCurrentTime(0);
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+    };
+    
+    // Restart progress tracking from new time
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+    }
+    
+    progressIntervalRef.current = window.setInterval(() => {
+      setCurrentTime(prev => {
+        if (prev >= duration) {
+          if (progressIntervalRef.current) {
+            clearInterval(progressIntervalRef.current);
+          }
+          return duration;
+        }
+        return prev + 0.1;
+      });
+    }, 100);
+    
+    speechSynthRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+    setIsSpeaking(true);
+    setIsPaused(false);
+  };
+
+  // Cleanup speech on component unmount or when article changes
+  useEffect(() => {
+    return () => {
+      window.speechSynthesis.cancel();
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+    };
+  }, [selectedArticle]);
+
+  // Handle Android hardware back button
+  useEffect(() => {
+    const setupBackButtonHandler = async () => {
+      const backButtonHandler = await CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+        if (selectedArticle) {
+          // Viewing article - stop speech and go back to search results
+          handleStopSpeech();
+          setSelectedArticle(null);
+        } else if (canGoBack) {
+          // On search results - go back to previous page
+          navigate(-1);
+        }
+        // Otherwise allow default behavior (exit app from home)
+      });
+
+      return backButtonHandler;
+    };
+
+    let listenerCleanup: any = null;
+    setupBackButtonHandler().then(listener => {
+      listenerCleanup = listener;
+    });
+
+    return () => {
+      if (listenerCleanup) {
+        listenerCleanup.remove();
+      }
+    };
+  }, [selectedArticle, navigate]);
 
   // Check if query is a question
   const isQuestion = () => {
@@ -66,7 +343,7 @@ const SearchResults = () => {
         const summary = page.extract || '';
         const imagesList = page.images || [];
         
-        // Get image URLs quickly (limit to first 10 for speed)
+        // Get all available image URLs (increased limit)
         const imageUrls: string[] = [];
         if (imagesList.length > 0) {
           const imageFileNames = imagesList
@@ -75,13 +352,13 @@ const SearchResults = () => {
               const lower = title.toLowerCase();
               return !lower.includes('icon') && !lower.includes('logo') && 
                      !lower.includes('flag') && !lower.includes('.svg') &&
-                     (lower.includes('.jpg') || lower.includes('.jpeg') || lower.includes('.png'));
+                     (lower.includes('.jpg') || lower.includes('.jpeg') || lower.includes('.png') || lower.includes('.webp'));
             })
-            .slice(0, 10); // Reduced from 20 to 10 for faster loading
+            .slice(0, 20); // Increased from 10 to 20 to get more images
           
           if (imageFileNames.length > 0) {
             const imageData = await fetch(
-              `https://en.wikipedia.org/w/api.php?action=query&titles=${imageFileNames.join('|')}&prop=imageinfo&iiprop=url|size&iiurlwidth=800&format=json&origin=*`,
+              `https://en.wikipedia.org/w/api.php?action=query&titles=${imageFileNames.join('|')}&prop=imageinfo&iiprop=url|size&iiurlwidth=1000&format=json&origin=*`,
               { priority: 'high', cache: 'force-cache' }
             ).then(res => res.json());
             
@@ -89,7 +366,8 @@ const SearchResults = () => {
               Object.values(imageData.query.pages).forEach((imgPage: any) => {
                 if (imgPage.imageinfo && imgPage.imageinfo[0]) {
                   const info = imgPage.imageinfo[0];
-                  if (info.width > 200 && info.height > 200) {
+                  // Lower threshold and accept more images
+                  if (info.width > 150 && info.height > 150) {
                     imageUrls.push(info.thumburl || info.url);
                   }
                 }
@@ -172,10 +450,11 @@ const SearchResults = () => {
             mainContent = mainContent.replace(regex, '<mark class="keyword-highlight">$1</mark>');
           });
           
-          // Insert images inline (max 6 for faster rendering)
+          // Insert images inline (more images for better visual experience)
           if (imageUrls.length > 0) {
             const paragraphs = mainContent.split('</p>');
-            const imageInsertPositions = Math.floor(paragraphs.length / (Math.min(imageUrls.length, 6) + 1));
+            const maxImages = Math.min(imageUrls.length, 12); // Increased from 6 to 12
+            const imageInsertPositions = Math.floor(paragraphs.length / (maxImages + 1));
             
             let imageIndex = 0;
             const newContent: string[] = [];
@@ -183,7 +462,7 @@ const SearchResults = () => {
             paragraphs.forEach((para, index) => {
               newContent.push(para + (para.trim() ? '</p>' : ''));
               
-              if (imageIndex < Math.min(imageUrls.length, 6) && 
+              if (imageIndex < maxImages && 
                   index > 0 && 
                   index % Math.max(2, imageInsertPositions) === 0) {
                 newContent.push(`
@@ -230,6 +509,8 @@ const SearchResults = () => {
   };
 
   const handleBackToResults = () => {
+    // Stop speech when going back
+    handleStopSpeech();
     setSelectedArticle(null);
     setArticleContent("");
   };
@@ -344,9 +625,72 @@ const SearchResults = () => {
             </button>
 
             {/* Article Title - No Box */}
-            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-8">
-              {selectedArticle.title}
-            </h1>
+            <div className="flex items-start justify-between gap-4 mb-8">
+              <h1 className="text-4xl sm:text-5xl font-bold text-white flex-1">
+                {selectedArticle.title}
+              </h1>
+              
+              {/* Text-to-Speech Controls - Audio Player Style */}
+              {!articleLoading && articleContent && (
+                <div className="flex items-center gap-3 bg-gray-800/50 backdrop-blur-sm rounded-full px-4 py-2 border border-gray-700 shadow-lg min-w-[200px]">
+                  {/* Play/Pause Button */}
+                  {!isSpeaking && !isPaused ? (
+                    <button
+                      onClick={handlePlaySpeech}
+                      className="p-2 rounded-full hover:bg-gray-700 transition-colors"
+                      aria-label="Play article"
+                      title="Listen to article"
+                    >
+                      <Play size={18} fill="white" className="text-white" />
+                    </button>
+                  ) : isPaused ? (
+                    <button
+                      onClick={handlePlaySpeech}
+                      className="p-2 rounded-full hover:bg-gray-700 transition-colors"
+                      aria-label="Resume article"
+                      title="Resume"
+                    >
+                      <Play size={18} fill="white" className="text-white" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handlePauseSpeech}
+                      className="p-2 rounded-full hover:bg-gray-700 transition-colors"
+                      aria-label="Pause article"
+                      title="Pause"
+                    >
+                      <Pause size={18} fill="white" className="text-white" />
+                    </button>
+                  )}
+                  
+                  {/* Time Display */}
+                  <span className="text-xs text-gray-300 font-mono whitespace-nowrap">
+                    {formatTime(currentTime)} / {formatTime(duration)}
+                  </span>
+                  
+                  {/* Progress Bar - Clickable to seek */}
+                  <div 
+                    className="flex-1 min-w-[60px] cursor-pointer"
+                    onClick={handleSeek}
+                  >
+                    <div className="h-1 bg-gray-600 rounded-full overflow-hidden hover:h-1.5 transition-all">
+                      <div 
+                        className="h-full bg-white rounded-full transition-all duration-100"
+                        style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  {/* Volume Icon */}
+                  <button className="p-2 hover:bg-gray-700 rounded-full transition-colors">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
+                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
 
             {/* Article content */}
             <div className="article-container">
